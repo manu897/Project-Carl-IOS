@@ -1,2 +1,2 @@
-# Project_Carl_IOS
+# Project-Carl-IOS
 IOS based app for Project Carl
