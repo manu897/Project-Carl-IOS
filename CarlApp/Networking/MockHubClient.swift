@@ -14,13 +14,32 @@ final class MockHubClient: HubClient, @unchecked Sendable {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         self.decoder = decoder
-        self.nodes = Self.loadJSON([Plant].self, name: "nodes", bundle: bundle, decoder: decoder)
-        self.healthFixture = Self.loadJSON(HubHealth.self, name: "health", bundle: bundle, decoder: decoder)
-        self.historyFixture = Self.loadJSON(
+        let rawNodes = Self.loadJSON([Plant].self, name: "nodes", bundle: bundle, decoder: decoder)
+        let rawHistory = Self.loadJSON(
             History.self,
             name: "history-aabbccddee01-24h",
             bundle: bundle,
             decoder: decoder
+        )
+        // Slide every fixture timestamp so the freshest sample is "now". Keeps
+        // the mock feeling live even months after the JSON was authored.
+        let latest = rawNodes.map(\.lastSeen).max() ?? .now
+        let offset = Date.now.timeIntervalSince(latest)
+        self.nodes = rawNodes.map { plant in
+            var p = plant
+            p.lastSeen = plant.lastSeen.addingTimeInterval(offset)
+            p.latest.timestamp = plant.latest.timestamp.addingTimeInterval(offset)
+            return p
+        }
+        self.healthFixture = Self.loadJSON(HubHealth.self, name: "health", bundle: bundle, decoder: decoder)
+        self.historyFixture = History(
+            nodeId: rawHistory.nodeId,
+            range: rawHistory.range,
+            samples: rawHistory.samples.map { sample in
+                var s = sample
+                s.timestamp = sample.timestamp.addingTimeInterval(offset)
+                return s
+            }
         )
     }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 struct Reading: Codable, Hashable, Sendable {
-    let timestamp: Date
+    var timestamp: Date
     var temperatureC: Double?
     var humidityPct: Double?
     var pressureHpa: Double?
