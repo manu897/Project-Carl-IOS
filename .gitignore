@@ -23,3 +23,6 @@ Package.resolved
 
 ## Misc
 *.log
+
+## Claude Code worktrees / settings (never on GitHub)
+.claude/
