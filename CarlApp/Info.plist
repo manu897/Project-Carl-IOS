@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Carl</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Carl uses Bluetooth to read a sensor node's first-boot key during plant setup.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_carl-hub._tcp</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Carl uses the camera to scan a sensor node's setup QR code and to take a profile picture of your plant.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Carl needs to discover and talk to your hub on the local Wi-Fi network.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Carl can use a photo from your library as a plant's profile picture.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Carl sends local alerts when a plant needs attention (dry soil, low battery, offline node).</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>AccentColor</string>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>

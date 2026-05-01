@@ -1,0 +1,447 @@
+{
+  "node_id": "aabbccddee01",
+  "range": "24h",
+  "samples": [
+    {
+      "ts": "2026-04-29T15:00:00Z",
+      "temperature_c": 22.7,
+      "humidity_pct": 45.06,
+      "pressure_hpa": 1013.03,
+      "soil_pct": 45.09,
+      "illuminance_lux": 426.4,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T15:30:00Z",
+      "temperature_c": 22.54,
+      "humidity_pct": 45.46,
+      "pressure_hpa": 1012.95,
+      "soil_pct": 44.85,
+      "illuminance_lux": 366.4,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T16:00:00Z",
+      "temperature_c": 22.23,
+      "humidity_pct": 46.18,
+      "pressure_hpa": 1012.7,
+      "soil_pct": 44.65,
+      "illuminance_lux": 324.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T16:30:00Z",
+      "temperature_c": 22.08,
+      "humidity_pct": 47.96,
+      "pressure_hpa": 1012.92,
+      "soil_pct": 44.82,
+      "illuminance_lux": 246.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T17:00:00Z",
+      "temperature_c": 22.16,
+      "humidity_pct": 47.54,
+      "pressure_hpa": 1012.72,
+      "soil_pct": 44.62,
+      "illuminance_lux": 164.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T17:30:00Z",
+      "temperature_c": 21.58,
+      "humidity_pct": 48.83,
+      "pressure_hpa": 1013.07,
+      "soil_pct": 44.44,
+      "illuminance_lux": 83.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T18:00:00Z",
+      "temperature_c": 21.56,
+      "humidity_pct": 49.74,
+      "pressure_hpa": 1012.65,
+      "soil_pct": 44.13,
+      "illuminance_lux": 1.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T18:30:00Z",
+      "temperature_c": 21.15,
+      "humidity_pct": 51.14,
+      "pressure_hpa": 1013.07,
+      "soil_pct": 43.91,
+      "illuminance_lux": 9.4,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T19:00:00Z",
+      "temperature_c": 21.02,
+      "humidity_pct": 51.15,
+      "pressure_hpa": 1012.8,
+      "soil_pct": 43.98,
+      "illuminance_lux": 21.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T19:30:00Z",
+      "temperature_c": 20.84,
+      "humidity_pct": 52.35,
+      "pressure_hpa": 1012.83,
+      "soil_pct": 43.88,
+      "illuminance_lux": 21.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T20:00:00Z",
+      "temperature_c": 20.79,
+      "humidity_pct": 52.24,
+      "pressure_hpa": 1012.72,
+      "soil_pct": 43.45,
+      "illuminance_lux": 22.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T20:30:00Z",
+      "temperature_c": 20.4,
+      "humidity_pct": 52.73,
+      "pressure_hpa": 1013.06,
+      "soil_pct": 43.45,
+      "illuminance_lux": 22.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T21:00:00Z",
+      "temperature_c": 20.38,
+      "humidity_pct": 53.87,
+      "pressure_hpa": 1013.06,
+      "soil_pct": 43.32,
+      "illuminance_lux": 17.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T21:30:00Z",
+      "temperature_c": 20.05,
+      "humidity_pct": 55.44,
+      "pressure_hpa": 1013.13,
+      "soil_pct": 43.32,
+      "illuminance_lux": 14.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T22:00:00Z",
+      "temperature_c": 19.77,
+      "humidity_pct": 55.6,
+      "pressure_hpa": 1013.26,
+      "soil_pct": 42.99,
+      "illuminance_lux": 29.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T22:30:00Z",
+      "temperature_c": 19.75,
+      "humidity_pct": 55.31,
+      "pressure_hpa": 1012.97,
+      "soil_pct": 42.85,
+      "illuminance_lux": 0.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T23:00:00Z",
+      "temperature_c": 19.63,
+      "humidity_pct": 55.03,
+      "pressure_hpa": 1012.7,
+      "soil_pct": 42.34,
+      "illuminance_lux": 23.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-29T23:30:00Z",
+      "temperature_c": 19.61,
+      "humidity_pct": 55.73,
+      "pressure_hpa": 1012.96,
+      "soil_pct": 42.67,
+      "illuminance_lux": 2.4,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T00:00:00Z",
+      "temperature_c": 19.72,
+      "humidity_pct": 56.77,
+      "pressure_hpa": 1012.82,
+      "soil_pct": 42.49,
+      "illuminance_lux": 25.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T00:30:00Z",
+      "temperature_c": 19.68,
+      "humidity_pct": 55.67,
+      "pressure_hpa": 1012.72,
+      "soil_pct": 42.38,
+      "illuminance_lux": 28.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T01:00:00Z",
+      "temperature_c": 19.63,
+      "humidity_pct": 55.26,
+      "pressure_hpa": 1013.07,
+      "soil_pct": 41.84,
+      "illuminance_lux": 14.5,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T01:30:00Z",
+      "temperature_c": 19.74,
+      "humidity_pct": 54.55,
+      "pressure_hpa": 1013.05,
+      "soil_pct": 41.8,
+      "illuminance_lux": 11.1,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T02:00:00Z",
+      "temperature_c": 20.12,
+      "humidity_pct": 55.58,
+      "pressure_hpa": 1013.14,
+      "soil_pct": 41.71,
+      "illuminance_lux": 18.5,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T02:30:00Z",
+      "temperature_c": 19.89,
+      "humidity_pct": 55.56,
+      "pressure_hpa": 1013.24,
+      "soil_pct": 41.72,
+      "illuminance_lux": 26.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T03:00:00Z",
+      "temperature_c": 20.18,
+      "humidity_pct": 54.04,
+      "pressure_hpa": 1012.65,
+      "soil_pct": 41.16,
+      "illuminance_lux": 19.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T03:30:00Z",
+      "temperature_c": 20.23,
+      "humidity_pct": 53.07,
+      "pressure_hpa": 1012.64,
+      "soil_pct": 41.05,
+      "illuminance_lux": 10.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T04:00:00Z",
+      "temperature_c": 20.4,
+      "humidity_pct": 52.3,
+      "pressure_hpa": 1012.62,
+      "soil_pct": 40.86,
+      "illuminance_lux": 10.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T04:30:00Z",
+      "temperature_c": 20.96,
+      "humidity_pct": 52.52,
+      "pressure_hpa": 1012.88,
+      "soil_pct": 40.74,
+      "illuminance_lux": 7.6,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T05:00:00Z",
+      "temperature_c": 20.98,
+      "humidity_pct": 50.8,
+      "pressure_hpa": 1012.97,
+      "soil_pct": 41.01,
+      "illuminance_lux": 29.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T05:30:00Z",
+      "temperature_c": 21.26,
+      "humidity_pct": 49.95,
+      "pressure_hpa": 1012.81,
+      "soil_pct": 40.41,
+      "illuminance_lux": 10.3,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T06:00:00Z",
+      "temperature_c": 21.63,
+      "humidity_pct": 49.32,
+      "pressure_hpa": 1013.02,
+      "soil_pct": 40.21,
+      "illuminance_lux": 28.5,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T06:30:00Z",
+      "temperature_c": 21.59,
+      "humidity_pct": 49.3,
+      "pressure_hpa": 1013.38,
+      "soil_pct": 40.07,
+      "illuminance_lux": 94.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T07:00:00Z",
+      "temperature_c": 22.11,
+      "humidity_pct": 48.84,
+      "pressure_hpa": 1012.73,
+      "soil_pct": 40.06,
+      "illuminance_lux": 166.3,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T07:30:00Z",
+      "temperature_c": 22.3,
+      "humidity_pct": 47.77,
+      "pressure_hpa": 1012.78,
+      "soil_pct": 40.22,
+      "illuminance_lux": 239.5,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T08:00:00Z",
+      "temperature_c": 22.52,
+      "humidity_pct": 47.97,
+      "pressure_hpa": 1013.25,
+      "soil_pct": 40.11,
+      "illuminance_lux": 324.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T08:30:00Z",
+      "temperature_c": 22.69,
+      "humidity_pct": 45.8,
+      "pressure_hpa": 1012.62,
+      "soil_pct": 39.76,
+      "illuminance_lux": 375.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T09:00:00Z",
+      "temperature_c": 22.58,
+      "humidity_pct": 45.32,
+      "pressure_hpa": 1013.37,
+      "soil_pct": 39.46,
+      "illuminance_lux": 445.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T09:30:00Z",
+      "temperature_c": 22.91,
+      "humidity_pct": 46.11,
+      "pressure_hpa": 1012.89,
+      "soil_pct": 39.74,
+      "illuminance_lux": 504.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T10:00:00Z",
+      "temperature_c": 22.95,
+      "humidity_pct": 44.26,
+      "pressure_hpa": 1013.1,
+      "soil_pct": 39.12,
+      "illuminance_lux": 525.7,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T10:30:00Z",
+      "temperature_c": 23.32,
+      "humidity_pct": 45.14,
+      "pressure_hpa": 1013.24,
+      "soil_pct": 39.14,
+      "illuminance_lux": 573.9,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T11:00:00Z",
+      "temperature_c": 23.07,
+      "humidity_pct": 44.53,
+      "pressure_hpa": 1013.2,
+      "soil_pct": 39.25,
+      "illuminance_lux": 603.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T11:30:00Z",
+      "temperature_c": 23.28,
+      "humidity_pct": 43.41,
+      "pressure_hpa": 1013.24,
+      "soil_pct": 39.02,
+      "illuminance_lux": 604.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T12:00:00Z",
+      "temperature_c": 23.49,
+      "humidity_pct": 43.79,
+      "pressure_hpa": 1013.18,
+      "soil_pct": 38.64,
+      "illuminance_lux": 628.4,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T12:30:00Z",
+      "temperature_c": 23.15,
+      "humidity_pct": 43.31,
+      "pressure_hpa": 1013.25,
+      "soil_pct": 38.34,
+      "illuminance_lux": 622.0,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T13:00:00Z",
+      "temperature_c": 23.1,
+      "humidity_pct": 44.86,
+      "pressure_hpa": 1012.88,
+      "soil_pct": 38.69,
+      "illuminance_lux": 599.3,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T13:30:00Z",
+      "temperature_c": 23.18,
+      "humidity_pct": 43.72,
+      "pressure_hpa": 1013.12,
+      "soil_pct": 37.96,
+      "illuminance_lux": 583.5,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T14:00:00Z",
+      "temperature_c": 23.07,
+      "humidity_pct": 45.67,
+      "pressure_hpa": 1013.26,
+      "soil_pct": 38.06,
+      "illuminance_lux": 545.8,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T14:30:00Z",
+      "temperature_c": 22.81,
+      "humidity_pct": 44.74,
+      "pressure_hpa": 1013.07,
+      "soil_pct": 37.83,
+      "illuminance_lux": 483.2,
+      "battery_pct": 87
+    },
+    {
+      "ts": "2026-04-30T15:00:00Z",
+      "temperature_c": 22.68,
+      "humidity_pct": 45.6,
+      "pressure_hpa": 1012.88,
+      "soil_pct": 37.58,
+      "illuminance_lux": 451.6,
+      "battery_pct": 87
+    }
+  ]
+}

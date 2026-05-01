@@ -1,0 +1,7 @@
+{
+  "hub_id": "carl-hub-fixture",
+  "version": "0.1.0-dev",
+  "uptime_s": 86400,
+  "node_count": 3,
+  "wifi_rssi_dbm": -54
+}

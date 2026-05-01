@@ -1,0 +1,60 @@
+name: CarlApp
+options:
+  bundleIdPrefix: com.bioliberty.carl
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+targets:
+  CarlApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: CarlApp
+    resources:
+      - path: CarlApp/Resources
+      - path: CarlApp/Assets.xcassets
+    info:
+      path: CarlApp/Info.plist
+      properties:
+        CFBundleDisplayName: Carl
+        UILaunchScreen:
+          UIColorName: AccentColor
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSLocalNetworkUsageDescription: Carl needs to discover and talk to your hub on the local Wi-Fi network.
+        NSBonjourServices:
+          - _carl-hub._tcp
+        NSBluetoothAlwaysUsageDescription: Carl uses Bluetooth to read a sensor node's first-boot key during plant setup.
+        NSCameraUsageDescription: Carl uses the camera to scan a sensor node's setup QR code and to take a profile picture of your plant.
+        NSPhotoLibraryUsageDescription: Carl can use a photo from your library as a plant's profile picture.
+        NSUserNotificationsUsageDescription: Carl sends local alerts when a plant needs attention (dry soil, low battery, offline node).
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bioliberty.carl.CarlApp
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: NO
+
+  CarlAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: CarlAppTests
+    dependencies:
+      - target: CarlApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bioliberty.carl.CarlAppTests
