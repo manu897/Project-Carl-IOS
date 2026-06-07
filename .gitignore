@@ -26,3 +26,5 @@ Package.resolved
 
 ## Claude Code worktrees / settings (never on GitHub)
 .claude/
+
+.vscode/
