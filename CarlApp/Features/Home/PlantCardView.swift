@@ -25,11 +25,19 @@ struct PlantCardView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.tertiarySystemBackground))
-            Image(systemName: "leaf.fill")
-                .font(.title2)
-                .foregroundStyle(.green)
+            if let img = PhotoStore.shared.loadImage(for: plant.id) {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                Image(systemName: "leaf.fill")
+                    .font(.title2)
+                    .foregroundStyle(.green)
+            }
         }
         .frame(width: 56, height: 56)
+        .clipped()
     }
 
     @ViewBuilder

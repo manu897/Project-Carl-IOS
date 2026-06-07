@@ -32,15 +32,23 @@ struct PlantDetailView: View {
 
     private var header: some View {
         // Profile photo header — drives off the Norman-hosted URL once that
-        // endpoint ships. Placeholder for now.
+        // endpoint ships. Falls back to the green-leaf placeholder.
         ZStack {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.secondarySystemBackground))
-            Image(systemName: "leaf.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.green.opacity(0.7))
+            if let img = PhotoStore.shared.loadImage(for: plant.id) {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else {
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.green.opacity(0.7))
+            }
         }
         .frame(height: 180)
+        .clipped()
     }
 
     private func healthCard(viewModel: PlantDetailViewModel) -> some View {

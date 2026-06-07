@@ -14,7 +14,7 @@ final class HomeViewModel {
     private(set) var state: LoadState = .idle
     private(set) var plants: [Plant] = []
 
-    private let repository: any PlantRepository
+    let repository: any PlantRepository
     nonisolated(unsafe) private var streamTask: Task<Void, Never>?
 
     init(repository: any PlantRepository) {

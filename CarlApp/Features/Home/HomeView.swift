@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @Bindable var viewModel: HomeViewModel
     @State private var showingSettings = false
+    @State private var showingAddPlant = false
 
     var body: some View {
         NavigationStack {
@@ -17,16 +18,20 @@ struct HomeView: View {
                         }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        // AddPlant flow lands in a follow-up commit.
                         Button {
+                            showingAddPlant = true
                         } label: {
                             Image(systemName: "plus")
                         }
-                        .disabled(true)
                     }
                 }
                 .sheet(isPresented: $showingSettings) {
                     SettingsView()
+                }
+                .sheet(isPresented: $showingAddPlant) {
+                    AddPlantView(repository: viewModel.repository) {
+                        Task { await viewModel.refresh() }
+                    }
                 }
         }
         .task {
