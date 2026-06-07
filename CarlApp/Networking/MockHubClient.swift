@@ -11,8 +11,7 @@ final class MockHubClient: HubClient, @unchecked Sendable {
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = JSONDecoder.carlHub()
         self.decoder = decoder
         let rawNodes = Self.loadJSON([Plant].self, name: "nodes", bundle: bundle, decoder: decoder)
         let rawHistory = Self.loadJSON(

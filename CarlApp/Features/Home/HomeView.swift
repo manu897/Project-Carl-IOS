@@ -2,12 +2,20 @@ import SwiftUI
 
 struct HomeView: View {
     @Bindable var viewModel: HomeViewModel
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("My Plants")
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         // AddPlant flow lands in a follow-up commit.
                         Button {
@@ -16,6 +24,9 @@ struct HomeView: View {
                         }
                         .disabled(true)
                     }
+                }
+                .sheet(isPresented: $showingSettings) {
+                    SettingsView()
                 }
         }
         .task {

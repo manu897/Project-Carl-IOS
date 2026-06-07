@@ -21,9 +21,7 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
     init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        self.decoder = decoder
+        self.decoder = .carlHub()
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         self.encoder = encoder
@@ -67,8 +65,19 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
 
     func liveStream() -> AsyncThrowingStream<StreamFrame, Error> {
         AsyncThrowingStream { continuation in
+            // URLSession.webSocketTask requires a ws:// or wss:// URL, not http://.
+            // Map scheme accordingly. If the scheme is unknown, finish the stream
+            // with an error rather than throwing an NSException out of the
+            // synchronous WebSocketTask init.
+            guard let wsURL = Self.websocketURL(httpBase: baseURL, path: "/api/stream") else {
+                continuation.finish(throwing: HubError(
+                    code: "bad_ws_scheme",
+                    message: "Cannot build WebSocket URL from \(baseURL)"
+                ))
+                return
+            }
             let task = WebSocketStream(
-                url: baseURL.appending(path: "/api/stream"),
+                url: wsURL,
                 session: session,
                 decoder: decoder,
                 continuation: continuation
@@ -76,6 +85,19 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
             continuation.onTermination = { _ in task.cancel() }
             task.start()
         }
+    }
+
+    private static func websocketURL(httpBase: URL, path: String) -> URL? {
+        guard var components = URLComponents(url: httpBase, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+        switch components.scheme?.lowercased() {
+        case "http", "ws":   components.scheme = "ws"
+        case "https", "wss": components.scheme = "wss"
+        default:             return nil
+        }
+        components.path = path
+        return components.url
     }
 
     // MARK: - Private

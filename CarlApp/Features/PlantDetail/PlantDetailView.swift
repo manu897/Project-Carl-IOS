@@ -3,6 +3,7 @@ import Charts
 
 struct PlantDetailView: View {
     let plant: Plant
+    @AppStorage(SettingsKeys.useMockHub) private var useMockHub: Bool = true
     @State private var viewModel: PlantDetailViewModel?
     @State private var showAdvanced = false
 
@@ -21,7 +22,7 @@ struct PlantDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             if viewModel == nil {
-                viewModel = PlantDetailViewModel(plant: plant, repository: AppEnvironment.makeRepository())
+                viewModel = PlantDetailViewModel(plant: plant, repository: AppEnvironment.makeRepository(useMockHub: useMockHub))
                 await viewModel?.load()
             }
         }

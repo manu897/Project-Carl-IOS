@@ -1,21 +1,25 @@
 import Foundation
 
-/// Picks the repository implementation at launch time. Default in Debug is the
-/// fixture-backed mock so the UI works without a hub on the network.
+/// Picks the repository implementation at launch time. The Mock / Real toggle
+/// is user-controlled at runtime via `Settings`; see `SettingsKeys.useMockHub`.
 @MainActor
 enum AppEnvironment {
-    /// Flip to false to drive a real hub over Bonjour. Real-device only —
-    /// Bonjour doesn't work in the iOS Simulator across networks.
-    static let useMockHub = true
+    static let defaultHubURL = URL(string: "http://carl-hub.local")!
 
-    static func makeRepository() -> any PlantRepository {
+    static func makeRepository(useMockHub: Bool) -> any PlantRepository {
         if useMockHub {
             return HubRepository(client: MockHubClient())
         } else {
-            // Real-hub path: HubDiscovery resolves carl-hub.local; until then we
-            // fall back to the well-known mDNS hostname so the app boots.
-            let url = URL(string: "http://carl-hub.local")!
-            return HubRepository(client: HTTPHubClient(baseURL: url))
+            // Real-hub path: hub advertises _carl-hub._tcp via mDNS, but
+            // carl-hub.local resolves correctly on the LAN today so we don't
+            // need to spin up NWBrowser for the first deploy.
+            return HubRepository(client: HTTPHubClient(baseURL: defaultHubURL))
         }
     }
+}
+
+enum SettingsKeys {
+    /// `true` while developing against fixtures; flip from the Settings screen
+    /// to talk to the hub at carl-hub.local. Persisted in `UserDefaults`.
+    static let useMockHub = "useMockHub"
 }
