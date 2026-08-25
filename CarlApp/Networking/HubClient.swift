@@ -27,6 +27,19 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
         self.encoder = encoder
     }
 
+    /// A short-timeout session for LAN probing: `carl-hub.local` should answer
+    /// almost instantly when reachable, so a failed/absent hub (off Wi-Fi,
+    /// hub powered down) surfaces quickly instead of hanging on mDNS/DNS
+    /// resolution for the default ~60s. Used by `CompositeHubClient` to decide
+    /// when to fall back to the Norman cloud client.
+    static func lanProbeSession() -> URLSession {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 4
+        config.timeoutIntervalForResource = 6
+        config.waitsForConnectivity = false
+        return URLSession(configuration: config)
+    }
+
     func health() async throws -> HubHealth {
         try await get("/api/health")
     }
@@ -122,7 +135,7 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
     }
 
     private func makeRequest(_ method: String, _ path: String) -> URLRequest {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        var request = URLRequest(url: baseURL.appendingCarlPath(path))
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         return request

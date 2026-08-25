@@ -7,6 +7,8 @@ struct SettingsView: View {
     @AppStorage(SettingsKeys.alertsEnabled) private var alertsEnabled: Bool = false
     @Environment(\.dismiss) private var dismiss
     @State private var showingHubSetup = false
+    @State private var showingAccount = false
+    private let normanAuth = NormanAuthManager.shared
 
     var body: some View {
         NavigationStack {
@@ -31,6 +33,23 @@ struct SettingsView: View {
                     Text("Hub")
                 } footer: {
                     Text("Use this when adding a brand-new Carl hub that needs to join your home Wi-Fi for the first time.")
+                }
+
+                Section {
+                    Button {
+                        showingAccount = true
+                    } label: {
+                        HStack {
+                            Label("Cloud account", systemImage: "cloud")
+                            Spacer()
+                            Text(normanAuth.isSignedIn ? (normanAuth.email ?? "Signed in") : "Signed out")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Away from home")
+                } footer: {
+                    Text("Sign in to keep seeing your plants when you're off your home Wi-Fi. Optional — the app works LAN-only without it.")
                 }
 
                 Section {
@@ -67,6 +86,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingHubSetup) {
                 HubSetupView()
+            }
+            .sheet(isPresented: $showingAccount) {
+                NormanAccountView(auth: normanAuth)
             }
         }
     }

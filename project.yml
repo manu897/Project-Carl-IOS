@@ -62,3 +62,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectcarl.CarlAppTests
+        GENERATE_INFOPLIST_FILE: YES

@@ -6,15 +6,17 @@ struct CarlApp: App {
     static let backgroundTaskID = "com.projectcarl.CarlApp.alerts"
 
     @AppStorage(SettingsKeys.useMockHub) private var useMockHub: Bool = true
+    @AppStorage(SettingsKeys.normanSignedIn) private var normanSignedIn: Bool = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
             HomeView(viewModel: HomeViewModel(repository: AppEnvironment.makeRepository(useMockHub: useMockHub)))
                 // Force the view tree (and thus HomeViewModel + its repository)
-                // to recreate when the data source flips. Simpler than
-                // observing & re-injecting through every level.
-                .id(useMockHub)
+                // to recreate when the data source flips, or when signing in/out
+                // of the cloud account changes whether reads fall back to it.
+                // Simpler than observing & re-injecting through every level.
+                .id("\(useMockHub)-\(normanSignedIn)")
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .background {
                         scheduleAlertsRefresh()

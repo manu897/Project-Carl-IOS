@@ -156,36 +156,41 @@ My Plants                            (HomeView)
  ├── ⚙ Settings                      (SettingsView)
  │    ├── Use mock data toggle       (Mock / Real hub)
  │    ├── Hub Wi-Fi setup            (HubSetupView)
+ │    ├── Cloud account              (NormanAccountView — sign in / create account)
  │    ├── Alerts                     (AlertsSettingsView)
  │    │    ├── Send alerts (master)
  │    │    ├── Per-plant mute toggles
  │    │    └── Recent fired log
  │    └── About                      (version / build / GitHub link)
- ├── Plant card × N                  (PlantCardView)
- │    └── Plant detail               (PlantDetailView)
- │         ├── Health card           (rows: status / watered / water-again / L / T / H)
+ ├── Plant card × N                  (PlantCardView — plant or room node)
+ │    └── Detail                     (PlantDetailView)
+ │         ├── Health card           (plant: status/watered/water-again/L/T/H)
+ │         │                          (room: status/L/T/H only)
+ │         ├── Room environment card  (plants sharing a room_id, or the room node itself)
  │         └── Advanced (toggle)
- │              ├── Metrics grid
+ │              ├── Metrics grid     (soil metric hidden for room nodes)
  │              ├── Range picker  (24h / 7d / 30d)
- │              └── Chart cards × 4
+ │              └── Chart cards × 3–4
  └── + Add plant                     (AddPlantView)
         ├── Plant photo              (camera / library / placeholder)
+        ├── Species suggestion       (on-device Vision classifier → tappable pills)
         ├── Sensor node              (QR scan or manual MAC/key)
-        └── Plant name
+        └── Plant name               (auto-filled from accepted species suggestion)
 ```
 
 Built today:
-- **Home** with status pills + Settings sheet
-- **Plant detail** with health card + advanced charts
-- **Add plant** with QR scan, photo, manual entry, hub provisioning
-- **Settings** with Mock/Real source toggle
-- **Hub Wi-Fi onboarding** via captive-portal flow
-- **Alerts** — local notifications for dry soil, low battery, offline (foreground + background refresh)
+- **Home** with status pills + Settings sheet; room nodes show a "Room" badge and skip the soil-based status check.
+- **Plant detail** with health card + advanced charts; room nodes get a dedicated "Room environment" card instead of watering rows, and plants linked to a room (`room_id`) show that room's ambient readings automatically.
+- **Add plant** with QR scan, photo, manual entry, hub provisioning, **and on-device species detection** (Vision framework) that suggests a name and pre-fills species-specific calibration.
+- **Settings** with Mock/Real source toggle, hub Wi-Fi setup, and a cloud account section.
+- **Hub Wi-Fi onboarding** via captive-portal flow.
+- **Alerts** — local notifications for dry soil, low battery, offline (foreground + background refresh).
+- **Norman cloud fallback** — sign in once, and reads (plant list, detail, history) fall back to the cloud when the hub isn't reachable on LAN. Writes always stay hub-only.
 
 Planned (not built):
+- **Hub-claiming flow** — `POST /v1/hubs` isn't wired into the app yet, so a signed-in account has no hub associated with it and Norman has nothing to serve. This is the next priority — see the root [README](../README.md#future-plans).
 - **Widgets** — home/lock-screen widget showing the worst-status plant.
-- **Norman cloud failover** — read off-LAN when away from home.
-- **Plant species catalogue** — per-species light/temperature/humidity ranges.
+- **Custom-trained species model** — today's classifier is Vision's built-in (coarse) classifier; a Create ML model trained on common houseplants is a drop-in upgrade to `PlantClassifier`.
 
 ---
 
@@ -193,14 +198,15 @@ Planned (not built):
 
 These are the decisions where a designer's input would materially shift the product:
 
-1. **Photo placeholder.** Right now plants without a user-taken photo show an SF Symbol leaf. The Add Plant flow already supports camera + library; the placeholder only shows for plants the user hasn't photographed yet. Do we want a more polished placeholder (rotating illustrations? plant-type icons?) — or is the leaf fine?
-2. **Plant catalogue.** "Light: Good" vs. generic ranges is a stopgap. Real plant species have very different ranges (a fern wants different light than a succulent). Need: a plant-species selector at onboarding, plus per-species threshold defaults. Where in the onboarding flow does that fit, and how do we handle "I don't know the species"?
-3. **Watering as an event.** "Last watered" is currently detected from soil-moisture rises. Should the user also be able to log a watering manually ("I just watered the basil")? If yes, where does that affordance live — a button on the detail screen, a swipe action on the card?
-4. **Room vs. plant nodes.** Carl now has a separate room-monitor node type (Thingy:53) that broadcasts T/H/P/gas/lux/battery but has no soil sensor. They appear in the same My Plants list today. Worth a separate section ("Rooms"), or a node-type chip on the card, or status logic that hides "Soil" rows when soil is nil?
-5. **Notifications.** Local push for dry soil, low battery, offline. What's the right default — silent, banner, or both? Quiet hours? Per-plant mute?
-6. **Apple Home hand-off.** When the hub firmware exposes Matter, the iOS app will offer "Add to Apple Home". Where does that affordance sit — inside Settings, on each plant's detail screen, or as a one-time setup step after hub onboarding?
-7. **Empty state for Home.** The very first launch (no plants paired yet) should feel inviting and lead clearly into onboarding the hub + first plant. Currently it just shows `ContentUnavailableView`.
-8. **Camera-node imagery (long-term).** The Carl camera node feeds the Norman ML pipeline for plant-health analysis. There's no plan today to surface the camera images themselves in the iOS app, but if Norman returns a "your plant looks healthy / wilted" verdict, where does that show up?
+1. **Photo placeholder.** Right now plants without a user-taken photo show an SF Symbol leaf (room nodes show a sensor icon). The Add Plant flow already supports camera + library; the placeholder only shows for plants the user hasn't photographed yet. Do we want a more polished placeholder (rotating illustrations? plant-type icons?) — or is the leaf fine?
+2. **Watering as an event.** "Last watered" is currently detected from soil-moisture rises. Should the user also be able to log a watering manually ("I just watered the basil")? If yes, where does that affordance live — a button on the detail screen, a swipe action on the card?
+3. **Notifications.** Local push for dry soil, low battery, offline. What's the right default — silent, banner, or both? Quiet hours? Per-plant mute?
+4. **Apple Home hand-off.** When the hub firmware exposes Matter, the iOS app will offer "Add to Apple Home". Where does that affordance sit — inside Settings, on each plant's detail screen, or as a one-time setup step after hub onboarding?
+5. **Empty state for Home.** The very first launch (no plants paired yet) should feel inviting and lead clearly into onboarding the hub + first plant. Currently it just shows `ContentUnavailableView`.
+6. **Camera-node imagery (long-term).** The Carl camera node feeds the Norman ML pipeline for plant-health analysis. There's no plan today to surface the camera images themselves in the iOS app, but if Norman returns a "your plant looks healthy / wilted" verdict, where does that show up?
+7. **Hub-claiming UX.** Signing in to a Norman account doesn't yet associate a hub with it (`POST /v1/hubs` has no UI). Where should that step live — folded into Hub Wi-Fi setup, or a separate "Link to cloud account" step? And how does the returned hub token actually get onto the hub itself?
+
+Resolved since first written: the **plant catalogue** question is answered by the on-device species classifier + `SpeciesCatalog` (§2.4, §4), and **room vs. plant nodes** now render distinctly (status pill, detail layout, hidden soil rows) per Carl API v0.3.0's `node_type`/`room_id`.
 
 ---
 
