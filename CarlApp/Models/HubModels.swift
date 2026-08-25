@@ -46,17 +46,29 @@ struct NodeCreate: Codable, Sendable {
     let mac: String
     let keyHex: String
     let name: String
+    var nodeType: NodeType?
+    var roomId: String?
     var calibration: Calibration?
 
     enum CodingKeys: String, CodingKey {
         case mac, name, calibration
         case keyHex = "key_hex"
+        case nodeType = "node_type"
+        case roomId = "room_id"
     }
 }
 
 struct NodeUpdate: Codable, Sendable {
     var name: String?
+    var nodeType: NodeType?
+    var roomId: String?
     var calibration: Calibration?
+
+    enum CodingKeys: String, CodingKey {
+        case name, calibration
+        case nodeType = "node_type"
+        case roomId = "room_id"
+    }
 }
 
 struct WifiCreds: Codable, Sendable {

@@ -40,6 +40,10 @@ targets:
         NSCameraUsageDescription: Carl uses the camera to scan a sensor node's setup QR code and to take a profile picture of your plant.
         NSPhotoLibraryUsageDescription: Carl can use a photo from your library as a plant's profile picture.
         NSUserNotificationsUsageDescription: Carl sends local alerts when a plant needs attention (dry soil, low battery, offline node).
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.projectcarl.CarlApp.alerts
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectcarl.CarlApp

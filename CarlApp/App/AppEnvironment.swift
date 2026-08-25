@@ -22,4 +22,10 @@ enum SettingsKeys {
     /// `true` while developing against fixtures; flip from the Settings screen
     /// to talk to the hub at carl-hub.local. Persisted in `UserDefaults`.
     static let useMockHub = "useMockHub"
+
+    /// Master on/off for local notifications about dry soil, low battery, offline nodes.
+    static let alertsEnabled = "AlertEngine.enabled"
+
+    /// `[String]` — plant ids the user has muted individually.
+    static let alertsMuted = "AlertEngine.mutedPlantIds"
 }

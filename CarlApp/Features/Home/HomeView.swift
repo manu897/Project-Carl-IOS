@@ -26,7 +26,7 @@ struct HomeView: View {
                     }
                 }
                 .sheet(isPresented: $showingSettings) {
-                    SettingsView()
+                    SettingsView(plants: viewModel.plants)
                 }
                 .sheet(isPresented: $showingAddPlant) {
                     AddPlantView(repository: viewModel.repository) {

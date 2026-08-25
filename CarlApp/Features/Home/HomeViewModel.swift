@@ -26,6 +26,7 @@ final class HomeViewModel {
         do {
             plants = try await repository.plants()
             state = .loaded
+            await AlertEngine.shared.evaluate(plants)
             startLiveUpdates()
         } catch {
             state = .failed(error.localizedDescription)
@@ -36,6 +37,7 @@ final class HomeViewModel {
         do {
             plants = try await repository.plants()
             state = .loaded
+            await AlertEngine.shared.evaluate(plants)
         } catch {
             state = .failed(error.localizedDescription)
         }

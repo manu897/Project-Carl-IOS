@@ -62,11 +62,16 @@ struct PlantHealth {
         }
     }
 
-    static func assess(plant: Plant, history: [Reading]) -> PlantHealth {
-        PlantHealth(
-            temperature: classify(plant.latest.temperatureC, in: HealthRanges.temperatureC),
-            humidity: classify(plant.latest.humidityPct, in: HealthRanges.humidityPct),
-            light: classify(plant.latest.illuminanceLux, in: HealthRanges.illuminanceLux),
+    static func assess(plant: Plant, history: [Reading], species: SpeciesInfo? = nil) -> PlantHealth {
+        let speciesDefaults = species.flatMap { SpeciesCatalog.defaults(for: $0.identifier) }
+        let tempRange = speciesDefaults?.temperatureC ?? HealthRanges.temperatureC
+        let humidRange = speciesDefaults?.humidityPct ?? HealthRanges.humidityPct
+        let lightRange = speciesDefaults?.illuminanceLux ?? HealthRanges.illuminanceLux
+
+        return PlantHealth(
+            temperature: classify(plant.latest.temperatureC, in: tempRange),
+            humidity: classify(plant.latest.humidityPct, in: humidRange),
+            light: classify(plant.latest.illuminanceLux, in: lightRange),
             daysSinceWatered: detectLastWatering(history: history),
             daysUntilWater: predictDaysUntilDry(plant: plant, history: history)
         )

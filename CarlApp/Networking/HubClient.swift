@@ -64,11 +64,16 @@ final class HTTPHubClient: HubClient, @unchecked Sendable {
     }
 
     func liveStream() -> AsyncThrowingStream<StreamFrame, Error> {
+        // /api/stream (WebSocket) is not yet implemented on the hub firmware.
+        // Return an empty stream so the app doesn't send an upgrade request that
+        // the hub's httpd parser rejects with a 400. Re-enable once the hub
+        // ships WebSocket support.
+        AsyncThrowingStream { $0.finish() }
+    }
+
+    @available(*, unavailable, message: "Re-enable when hub firmware ships /api/stream")
+    private func _liveStreamWebSocket() -> AsyncThrowingStream<StreamFrame, Error> {
         AsyncThrowingStream { continuation in
-            // URLSession.webSocketTask requires a ws:// or wss:// URL, not http://.
-            // Map scheme accordingly. If the scheme is unknown, finish the stream
-            // with an error rather than throwing an NSException out of the
-            // synchronous WebSocketTask init.
             guard let wsURL = Self.websocketURL(httpBase: baseURL, path: "/api/stream") else {
                 continuation.finish(throwing: HubError(
                     code: "bad_ws_scheme",

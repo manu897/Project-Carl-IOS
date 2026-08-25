@@ -7,8 +7,18 @@ struct PlantCardView: View {
         HStack(spacing: 14) {
             photoPlaceholder
             VStack(alignment: .leading, spacing: 6) {
-                Text(plant.name)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(plant.name)
+                        .font(.headline)
+                    if plant.isRoom {
+                        Text("Room")
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.15), in: Capsule())
+                            .foregroundStyle(.blue)
+                    }
+                }
                 summaryLine
                 Text("Last seen \(plant.lastSeen.formatted(.relative(presentation: .named)))")
                     .font(.caption)
@@ -31,9 +41,9 @@ struct PlantCardView: View {
                     .scaledToFill()
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                Image(systemName: "leaf.fill")
+                Image(systemName: plant.isRoom ? "sensor.fill" : "leaf.fill")
                     .font(.title2)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(plant.isRoom ? .blue : .green)
             }
         }
         .frame(width: 56, height: 56)
@@ -44,7 +54,7 @@ struct PlantCardView: View {
     private var summaryLine: some View {
         switch PlantHealth.summary(for: plant) {
         case .healthy:
-            Text("Looking healthy")
+            Text(plant.isRoom ? "Monitoring room" : "Looking healthy")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         case .needsWater:

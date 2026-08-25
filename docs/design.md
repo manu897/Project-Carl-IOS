@@ -95,6 +95,20 @@ The grid + charts cover the same ground the original "tech" view did, just one t
 
 ---
 
+### 2.4 Settings, Hub Wi-Fi setup, and Alerts
+
+The gear icon (top-left of My Plants) opens a sheet with four sections: **Data source** (Mock / Real toggle), **Hub** (Set up hub Wi-Fi), **Notifications** (Alerts → detail screen), and **About** (version, build, GitHub link).
+
+| Settings (light) | Hub Wi-Fi setup | Alerts |
+|---|---|---|
+| ![Settings](screenshots/09-settings-with-alerts-light.png) | ![Hub Wi-Fi setup](screenshots/08-hub-setup-light.png) | ![Alerts](screenshots/10-alerts-light.png) |
+
+**Hub Wi-Fi setup** is a step-by-step onboarding flow for a brand-new hub. Three step cards explain how to join the hub's `Carl-Hub-Setup` SoftAP from iOS Settings, an "Open iOS Wi-Fi Settings" deep link to make that one tap, then a **Continue** button to advance to the credentials form. The form `POSTs` to `http://192.168.4.1/api/setup/wifi` (the hub's captive-portal endpoint); the hub reboots into station mode on success, then appears again at `carl-hub.local`.
+
+**Alerts** fire local notifications when a plant transitions into a `Needs water`, `Battery low`, or `Offline` state. Rate-limited to one notification per `(plant, condition)` every 6 hours so users aren't spammed. Master toggle requests `UNAuthorizationStatus` on first opt-in; if iOS has denied it, the screen shows an "Open in iOS Settings" affordance. Per-plant toggles below the master let users silence specific plants without losing them from the main list. Evaluation runs in two places: every foreground refresh of `HomeViewModel`, and once per `BGAppRefreshTask` wake (iOS schedules these opportunistically, typically every 30 min while the device is in use).
+
+---
+
 ## 3. Design system
 
 ### Typography
@@ -123,6 +137,7 @@ We never specify hex colours — every surface adapts to dark mode for free.
 - **`HealthRow`** — label/value row in the detail health table.
 - **`Metric`** — small "label over big number" cell in the advanced grid.
 - **`ChartCard`** — title + Min/Avg/Max header + Swift Chart line + dashed average rule.
+- **Settings + HubSetup** — sheet-presented, Form-based; HubSetup uses a numbered step-card pattern.
 
 All components live as private structs inside their feature folder; promote to a shared `Components/` group only when reused across features.
 
@@ -138,6 +153,14 @@ All components live as private structs inside their feature folder; promote to a
 
 ```
 My Plants                            (HomeView)
+ ├── ⚙ Settings                      (SettingsView)
+ │    ├── Use mock data toggle       (Mock / Real hub)
+ │    ├── Hub Wi-Fi setup            (HubSetupView)
+ │    ├── Alerts                     (AlertsSettingsView)
+ │    │    ├── Send alerts (master)
+ │    │    ├── Per-plant mute toggles
+ │    │    └── Recent fired log
+ │    └── About                      (version / build / GitHub link)
  ├── Plant card × N                  (PlantCardView)
  │    └── Plant detail               (PlantDetailView)
  │         ├── Health card           (rows: status / watered / water-again / L / T / H)
@@ -145,13 +168,24 @@ My Plants                            (HomeView)
  │              ├── Metrics grid
  │              ├── Range picker  (24h / 7d / 30d)
  │              └── Chart cards × 4
- └── + Add plant                     (AddPlantView — TODO)
+ └── + Add plant                     (AddPlantView)
+        ├── Plant photo              (camera / library / placeholder)
+        ├── Sensor node              (QR scan or manual MAC/key)
+        └── Plant name
 ```
 
-Future screens (planned, not built):
-- **Add plant** — QR scan, plant photo capture, name, register with hub.
-- **Hub Wi-Fi setup** — onboard the ESP32 hub onto home Wi-Fi via `Carl-Hub-Setup` SoftAP.
-- **Settings** — Norman cloud account, notification preferences, hub info, about.
+Built today:
+- **Home** with status pills + Settings sheet
+- **Plant detail** with health card + advanced charts
+- **Add plant** with QR scan, photo, manual entry, hub provisioning
+- **Settings** with Mock/Real source toggle
+- **Hub Wi-Fi onboarding** via captive-portal flow
+- **Alerts** — local notifications for dry soil, low battery, offline (foreground + background refresh)
+
+Planned (not built):
+- **Widgets** — home/lock-screen widget showing the worst-status plant.
+- **Norman cloud failover** — read off-LAN when away from home.
+- **Plant species catalogue** — per-species light/temperature/humidity ranges.
 
 ---
 
@@ -159,13 +193,14 @@ Future screens (planned, not built):
 
 These are the decisions where a designer's input would materially shift the product:
 
-1. **Photo placeholder.** Right now it's an SF Symbol leaf. Once Norman's `/v1/plants/{id}/profile-photo` endpoint exists, we get user-uploaded photos. Do we want a more polished placeholder (rotating illustrations? Plant-type icons?) for plants without photos?
+1. **Photo placeholder.** Right now plants without a user-taken photo show an SF Symbol leaf. The Add Plant flow already supports camera + library; the placeholder only shows for plants the user hasn't photographed yet. Do we want a more polished placeholder (rotating illustrations? plant-type icons?) — or is the leaf fine?
 2. **Plant catalogue.** "Light: Good" vs. generic ranges is a stopgap. Real plant species have very different ranges (a fern wants different light than a succulent). Need: a plant-species selector at onboarding, plus per-species threshold defaults. Where in the onboarding flow does that fit, and how do we handle "I don't know the species"?
 3. **Watering as an event.** "Last watered" is currently detected from soil-moisture rises. Should the user also be able to log a watering manually ("I just watered the basil")? If yes, where does that affordance live — a button on the detail screen, a swipe action on the card?
-4. **Notifications.** Local push for dry soil, low battery, offline. What's the right default — silent, banner, or both? Quiet hours? Per-plant mute?
-5. **Apple Home hand-off.** When the hub firmware exposes Matter, the iOS app will offer "Add to Apple Home". Where does that affordance sit — inside Settings, on each plant's detail screen, or as a one-time setup step after hub onboarding?
-6. **Empty state for Home.** The very first launch (no plants paired yet) should feel inviting and lead clearly into onboarding the hub + first plant. Currently it just shows `ContentUnavailableView`.
-7. **Camera-node imagery (long-term).** The Carl camera node feeds the Norman ML pipeline for plant-health analysis. There's no plan today to surface the camera images themselves in the iOS app, but if Norman returns a "your plant looks healthy / wilted" verdict, where does that show up?
+4. **Room vs. plant nodes.** Carl now has a separate room-monitor node type (Thingy:53) that broadcasts T/H/P/gas/lux/battery but has no soil sensor. They appear in the same My Plants list today. Worth a separate section ("Rooms"), or a node-type chip on the card, or status logic that hides "Soil" rows when soil is nil?
+5. **Notifications.** Local push for dry soil, low battery, offline. What's the right default — silent, banner, or both? Quiet hours? Per-plant mute?
+6. **Apple Home hand-off.** When the hub firmware exposes Matter, the iOS app will offer "Add to Apple Home". Where does that affordance sit — inside Settings, on each plant's detail screen, or as a one-time setup step after hub onboarding?
+7. **Empty state for Home.** The very first launch (no plants paired yet) should feel inviting and lead clearly into onboarding the hub + first plant. Currently it just shows `ContentUnavailableView`.
+8. **Camera-node imagery (long-term).** The Carl camera node feeds the Norman ML pipeline for plant-health analysis. There's no plan today to surface the camera images themselves in the iOS app, but if Norman returns a "your plant looks healthy / wilted" verdict, where does that show up?
 
 ---
 

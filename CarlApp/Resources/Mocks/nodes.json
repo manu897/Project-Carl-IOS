@@ -3,6 +3,8 @@
     "id": "aabbccddee01",
     "mac": "AA:BB:CC:DD:EE:01",
     "name": "Bedroom Monstera",
+    "node_type": "plant",
+    "room_id": "bedroom",
     "last_seen": "2026-04-30T14:55:12Z",
     "online": true,
     "battery_pct": 87,
@@ -20,12 +22,22 @@
       "soil_wet_pct": 65.0,
       "battery_low_pct": 15,
       "offline_after_minutes": 30
+    },
+    "room": {
+      "source": "aabbccddee04",
+      "ts": "2026-04-30T14:54:00Z",
+      "temperature_c": 22.1,
+      "humidity_pct": 47.0,
+      "pressure_hpa": 1013.3,
+      "illuminance_lux": 280.0
     }
   },
   {
     "id": "aabbccddee02",
     "mac": "AA:BB:CC:DD:EE:02",
     "name": "Kitchen Basil",
+    "node_type": "plant",
+    "room_id": "kitchen",
     "last_seen": "2026-04-30T14:54:48Z",
     "online": true,
     "battery_pct": 62,
@@ -49,6 +61,8 @@
     "id": "aabbccddee03",
     "mac": "AA:BB:CC:DD:EE:03",
     "name": "Living Room Fern",
+    "node_type": "plant",
+    "room_id": "living-room",
     "last_seen": "2026-04-30T13:10:00Z",
     "online": false,
     "battery_pct": 12,
@@ -64,6 +78,31 @@
     "calibration": {
       "soil_dry_pct": 30.0,
       "soil_wet_pct": 75.0,
+      "battery_low_pct": 15,
+      "offline_after_minutes": 30
+    }
+  },
+  {
+    "id": "aabbccddee04",
+    "mac": "AA:BB:CC:DD:EE:04",
+    "name": "Bedroom Sensor",
+    "node_type": "room",
+    "room_id": "bedroom",
+    "last_seen": "2026-04-30T14:54:00Z",
+    "online": true,
+    "battery_pct": 94,
+    "latest": {
+      "ts": "2026-04-30T14:54:00Z",
+      "temperature_c": 22.1,
+      "humidity_pct": 47.0,
+      "pressure_hpa": 1013.3,
+      "soil_pct": null,
+      "illuminance_lux": 280.0,
+      "battery_pct": 94
+    },
+    "calibration": {
+      "soil_dry_pct": 25.0,
+      "soil_wet_pct": 65.0,
       "battery_low_pct": 15,
       "offline_after_minutes": 30
     }

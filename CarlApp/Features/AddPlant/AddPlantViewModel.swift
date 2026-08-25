@@ -5,25 +5,38 @@ import UIKit
 @Observable
 @MainActor
 final class AddPlantViewModel {
+    enum ClassificationState: Sendable {
+        case idle
+        case classifying
+        case done([PlantClassifier.Result])
+        case failed
+    }
+
     // Form state
     var name: String = ""
     var mac: String = ""
     var keyHex: String = ""
-    var photo: UIImage?
+    var photo: UIImage? {
+        didSet { classifyPhoto() }
+    }
+
+    // Classification state
+    private(set) var classificationState: ClassificationState = .idle
+    var selectedSpecies: SpeciesInfo?
 
     // Flow state
     var isSubmitting = false
     var errorMessage: String?
-    /// Set to the new node id on success — used to persist the photo
-    /// after `POST /api/nodes` returns the canonical id from the hub.
     private(set) var createdNodeId: String?
 
     private let repository: any PlantRepository
     private let photoStore: PhotoStore
+    private let speciesStore: SpeciesStore
 
-    init(repository: any PlantRepository, photoStore: PhotoStore = .shared) {
+    init(repository: any PlantRepository, photoStore: PhotoStore = .shared, speciesStore: SpeciesStore = .shared) {
         self.repository = repository
         self.photoStore = photoStore
+        self.speciesStore = speciesStore
     }
 
     var canSubmit: Bool {
@@ -32,8 +45,6 @@ final class AddPlantViewModel {
             && !isSubmitting
     }
 
-    /// Applies a scanned `carl://node?...` payload to the form fields.
-    /// Returns `nil` if it parses cleanly, otherwise an error message.
     @discardableResult
     func applyScanned(_ raw: String) -> String? {
         do {
@@ -46,6 +57,19 @@ final class AddPlantViewModel {
             let msg = error.localizedDescription
             errorMessage = msg
             return msg
+        }
+    }
+
+    func selectSpecies(_ result: PlantClassifier.Result) {
+        let info = SpeciesInfo(
+            identifier: result.identifier,
+            commonName: result.commonName,
+            scientificName: SpeciesCatalog.scientificNames[result.identifier],
+            confidence: result.confidence
+        )
+        selectedSpecies = info
+        if name.trimmingCharacters(in: .whitespaces).isEmpty {
+            name = result.commonName
         }
     }
 
@@ -65,17 +89,48 @@ final class AddPlantViewModel {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
 
         do {
-            let plant = try await repository.add(mac: node.mac, keyHex: node.keyHex, name: trimmedName)
+            var calibration: Calibration?
+            if let species = selectedSpecies,
+               let speciesDefaults = SpeciesCatalog.defaults(for: species.identifier) {
+                calibration = speciesDefaults.calibration
+            }
+
+            let plant = try await repository.add(
+                mac: node.mac, keyHex: node.keyHex, name: trimmedName,
+                nodeType: nil, roomId: nil, calibration: calibration
+            )
             createdNodeId = plant.id
             if let photo {
-                // Persist locally for MVP. When Norman's photo endpoint exists
-                // this is where the upload (and an offline retry queue) goes.
                 try? photoStore.save(photo, for: plant.id)
+            }
+            if let species = selectedSpecies {
+                try? speciesStore.save(species, for: plant.id)
             }
             return true
         } catch {
             errorMessage = friendlyMessage(for: error)
             return false
+        }
+    }
+
+    // MARK: - Private
+
+    private func classifyPhoto() {
+        guard let image = photo else {
+            classificationState = .idle
+            return
+        }
+        classificationState = .classifying
+        Task {
+            do {
+                let results = try await PlantClassifier.shared.classify(image)
+                classificationState = results.isEmpty ? .idle : .done(results)
+                if let top = results.first, name.trimmingCharacters(in: .whitespaces).isEmpty {
+                    selectSpecies(top)
+                }
+            } catch {
+                classificationState = .failed
+            }
         }
     }
 

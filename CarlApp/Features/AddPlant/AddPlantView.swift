@@ -5,8 +5,6 @@ struct AddPlantView: View {
     @State private var viewModel: AddPlantViewModel
     @Environment(\.dismiss) private var dismiss
 
-    /// Called after the user successfully adds a plant so the parent (Home)
-    /// can refresh its list.
     var onAdded: (() -> Void)?
 
     @State private var showingScanner = false
@@ -22,6 +20,7 @@ struct AddPlantView: View {
         NavigationStack {
             Form {
                 photoSection
+                speciesSection
                 nodeSection
                 detailsSection
                 if let error = viewModel.errorMessage {
@@ -102,6 +101,43 @@ struct AddPlantView: View {
         .clipped()
     }
 
+    @ViewBuilder
+    private var speciesSection: some View {
+        switch viewModel.classificationState {
+        case .classifying:
+            Section {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text("Identifying plant…")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        case .done(let results):
+            Section {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(results, id: \.identifier) { result in
+                            SpeciesPill(
+                                name: result.commonName,
+                                confidence: result.confidence,
+                                isSelected: viewModel.selectedSpecies?.identifier == result.identifier
+                            ) {
+                                viewModel.selectSpecies(result)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            } header: {
+                Text("Species detected")
+            } footer: {
+                Text("Tap a suggestion to use it as the plant name. You can always change it below.")
+            }
+        case .idle, .failed:
+            EmptyView()
+        }
+    }
+
     private var nodeSection: some View {
         Section {
             Button {
@@ -142,6 +178,35 @@ struct AddPlantView: View {
                 dismiss()
             }
         }
+    }
+}
+
+// MARK: - Species pill
+
+private struct SpeciesPill: View {
+    let name: String
+    let confidence: Double
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(name)
+                    .font(.subheadline.weight(.medium))
+                Text("\(Int(confidence * 100))%")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.green.opacity(0.15) : Color(.tertiarySystemBackground),
+                         in: Capsule())
+            .overlay(
+                Capsule().stroke(isSelected ? Color.green : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -13,6 +13,9 @@ struct PlantDetailView: View {
                 header
                 if let viewModel {
                     healthCard(viewModel: viewModel)
+                    if plant.isRoom, let room = plant.room ?? roomFromSelf {
+                        roomEnvCard(room)
+                    }
                     advancedDisclosure(viewModel: viewModel)
                 }
             }
@@ -28,45 +31,101 @@ struct PlantDetailView: View {
         }
     }
 
+    /// For room nodes, synthesize a RoomEnv from its own latest reading.
+    private var roomFromSelf: RoomEnv? {
+        guard plant.isRoom else { return nil }
+        return RoomEnv(
+            source: plant.id,
+            ts: plant.latest.timestamp,
+            temperatureC: plant.latest.temperatureC,
+            humidityPct: plant.latest.humidityPct,
+            pressureHpa: plant.latest.pressureHpa,
+            illuminanceLux: plant.latest.illuminanceLux
+        )
+    }
+
     // MARK: - Sections
 
     private var header: some View {
-        // Profile photo header — drives off the Norman-hosted URL once that
-        // endpoint ships. Falls back to the green-leaf placeholder.
-        ZStack {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemBackground))
-            if let img = PhotoStore.shared.loadImage(for: plant.id) {
-                Image(uiImage: img)
-                    .resizable()
-                    .scaledToFill()
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-            } else {
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.green.opacity(0.7))
+        VStack(spacing: 8) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.secondarySystemBackground))
+                if let img = PhotoStore.shared.loadImage(for: plant.id) {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                } else {
+                    Image(systemName: plant.isRoom ? "sensor.fill" : "leaf.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(plant.isRoom ? .blue.opacity(0.7) : .green.opacity(0.7))
+                }
+            }
+            .frame(height: 180)
+            .clipped()
+
+            if let species = SpeciesStore.shared.load(for: plant.id) {
+                Text(species.scientificName ?? species.commonName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .italic()
             }
         }
-        .frame(height: 180)
-        .clipped()
     }
 
     private func healthCard(viewModel: PlantDetailViewModel) -> some View {
-        let health = PlantHealth.assess(plant: plant, history: viewModel.samples)
+        let species = SpeciesStore.shared.load(for: plant.id)
+        let health = PlantHealth.assess(plant: plant, history: viewModel.samples, species: species)
         return VStack(spacing: 0) {
             HealthRow(label: "Status",
                       value: PlantHealth.summary(for: plant).label,
                       tint: statusTint(for: PlantHealth.summary(for: plant)))
-            Divider()
-            HealthRow(label: "Last watered", value: lastWateredText(health.daysSinceWatered))
-            Divider()
-            HealthRow(label: "Water again", value: waterAgainText(health.daysUntilWater))
+            if !plant.isRoom {
+                Divider()
+                HealthRow(label: "Last watered", value: lastWateredText(health.daysSinceWatered))
+                Divider()
+                HealthRow(label: "Water again", value: waterAgainText(health.daysUntilWater))
+            }
             Divider()
             HealthRow(label: "Light", value: health.light.label, tint: levelTint(health.light))
             Divider()
             HealthRow(label: "Temperature", value: health.temperature.label, tint: levelTint(health.temperature))
             Divider()
             HealthRow(label: "Humidity", value: health.humidity.label, tint: levelTint(health.humidity))
+        }
+        .padding(.vertical, 4)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func roomEnvCard(_ room: RoomEnv) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Room environment")
+                    .font(.subheadline.weight(.medium))
+                Spacer()
+                Text(room.ts.formatted(.relative(presentation: .named)))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            Divider()
+            if let t = room.temperatureC {
+                HealthRow(label: "Temperature", value: String(format: "%.1f°C", t))
+                Divider()
+            }
+            if let h = room.humidityPct {
+                HealthRow(label: "Humidity", value: String(format: "%.0f%%", h))
+                Divider()
+            }
+            if let l = room.illuminanceLux {
+                HealthRow(label: "Light", value: "\(Int(l)) lx")
+                Divider()
+            }
+            if let p = room.pressureHpa {
+                HealthRow(label: "Pressure", value: String(format: "%.0f hPa", p))
+            }
         }
         .padding(.vertical, 4)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
@@ -118,7 +177,9 @@ struct PlantDetailView: View {
             } else if let message = vm.errorMessage {
                 Text(message).foregroundStyle(.red)
             } else {
-                ChartCard(title: "Soil moisture", samples: vm.samples, value: \.soilPct, unit: "%", tint: .blue)
+                if !plant.isRoom {
+                    ChartCard(title: "Soil moisture", samples: vm.samples, value: \.soilPct, unit: "%", tint: .blue)
+                }
                 ChartCard(title: "Temperature", samples: vm.samples, value: \.temperatureC, unit: "°C", tint: .orange)
                 ChartCard(title: "Humidity", samples: vm.samples, value: \.humidityPct, unit: "%", tint: .teal)
                 ChartCard(title: "Light", samples: vm.samples, value: \.illuminanceLux, unit: "lx", tint: .yellow)
@@ -128,17 +189,33 @@ struct PlantDetailView: View {
 
     private var metricsGrid: some View {
         Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 12) {
-            GridRow {
-                Metric(label: "Soil", value: plant.latest.soilPct.map { String(format: "%.0f%%", $0) } ?? "—")
-                Metric(label: "Temperature", value: plant.latest.temperatureC.map { String(format: "%.1f°C", $0) } ?? "—")
+            if !plant.isRoom {
+                GridRow {
+                    Metric(label: "Soil", value: plant.latest.soilPct.map { String(format: "%.0f%%", $0) } ?? "—")
+                    Metric(label: "Temperature", value: plant.latest.temperatureC.map { String(format: "%.1f°C", $0) } ?? "—")
+                }
+            } else {
+                GridRow {
+                    Metric(label: "Temperature", value: plant.latest.temperatureC.map { String(format: "%.1f°C", $0) } ?? "—")
+                    Metric(label: "Humidity", value: plant.latest.humidityPct.map { String(format: "%.0f%%", $0) } ?? "—")
+                }
             }
-            GridRow {
-                Metric(label: "Humidity", value: plant.latest.humidityPct.map { String(format: "%.0f%%", $0) } ?? "—")
-                Metric(label: "Light", value: plant.latest.illuminanceLux.map { "\(Int($0)) lx" } ?? "—")
+            if !plant.isRoom {
+                GridRow {
+                    Metric(label: "Humidity", value: plant.latest.humidityPct.map { String(format: "%.0f%%", $0) } ?? "—")
+                    Metric(label: "Light", value: plant.latest.illuminanceLux.map { "\(Int($0)) lx" } ?? "—")
+                }
+            } else {
+                GridRow {
+                    Metric(label: "Light", value: plant.latest.illuminanceLux.map { "\(Int($0)) lx" } ?? "—")
+                    Metric(label: "Pressure", value: plant.latest.pressureHpa.map { String(format: "%.0f hPa", $0) } ?? "—")
+                }
             }
             GridRow {
                 Metric(label: "Battery", value: plant.batteryPct.map { "\($0)%" } ?? "—")
-                Metric(label: "Pressure", value: plant.latest.pressureHpa.map { String(format: "%.0f hPa", $0) } ?? "—")
+                if !plant.isRoom {
+                    Metric(label: "Pressure", value: plant.latest.pressureHpa.map { String(format: "%.0f hPa", $0) } ?? "—")
+                }
             }
         }
         .padding(12)
