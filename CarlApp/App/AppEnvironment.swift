@@ -14,15 +14,24 @@ enum AppEnvironment {
         // Real-hub path: hub advertises _carl-hub._tcp via mDNS, but
         // carl-hub.local resolves correctly on the LAN today so we don't
         // need to spin up NWBrowser for the first deploy.
-        guard NormanSession.isSignedIn else {
-            return HubRepository(client: HTTPHubClient(baseURL: defaultHubURL))
-        }
-        // Signed in to Norman: read through CompositeHubClient so plants are
-        // visible off-LAN too. Its LAN leg uses a short-timeout session so a
-        // missing/off-Wi-Fi hub fails fast and falls back to the cloud
-        // instead of hanging on mDNS resolution.
+        //
+        // ALWAYS route through CompositeHubClient with the short-timeout LAN
+        // session, signed in or not. `carl-hub.local` is mDNS — it cannot
+        // resolve off the home network at all, and on some Wi-Fi setups
+        // mDNS resolution is itself intermittent (router-dependent, flaky
+        // right after the hub reboots or the phone reconnects to Wi-Fi).
+        // A bare `HTTPHubClient(baseURL:)` defaults to `URLSession.shared`,
+        // whose `waitsForConnectivity = true` config means a request that
+        // can never resolve doesn't fail fast — it can hang far longer than
+        // any expected timeout, which is exactly the "keeps on loading"
+        // symptom this caused both on cellular (no fallback existed at all)
+        // and, intermittently, on Wi-Fi (no timeout protection against a
+        // flaky mDNS response). Cloud fallback is nil when signed out, so a
+        // signed-out user still gets a fast, clear failure instead of a
+        // fast success — CompositeHubClient.readWithFallback rethrows the
+        // original LAN error when `cloud` is nil.
         let lan = HTTPHubClient(baseURL: defaultHubURL, session: HTTPHubClient.lanProbeSession())
-        let cloud = NormanClient(baseURL: normanBaseURL)
+        let cloud = NormanSession.isSignedIn ? NormanClient(baseURL: normanBaseURL) : nil
         return HubRepository(client: CompositeHubClient(lan: lan, cloud: cloud))
     }
 }
