@@ -37,6 +37,9 @@ struct PlantHealth {
 
     enum Summary {
         case healthy
+        /// Room nodes have no plant to be "healthy" — this is their
+        /// equivalent of `.healthy` (nothing wrong, reporting normally).
+        case online
         case needsWater
         case offline
         case lowBattery
@@ -45,6 +48,7 @@ struct PlantHealth {
         var label: String {
             switch self {
             case .healthy: return "Healthy"
+            case .online: return "Online"
             case .needsWater: return "Needs water"
             case .offline: return "Offline"
             case .lowBattery: return "Battery low"
@@ -58,7 +62,7 @@ struct PlantHealth {
         case .offline: return .offline
         case .lowBattery: return .lowBattery
         case .dry: return .needsWater
-        case .ok: return .healthy
+        case .ok: return plant.isRoom ? .online : .healthy
         }
     }
 

@@ -43,7 +43,10 @@ struct HomeView: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
-        case .idle, .loading where viewModel.plants.isEmpty:
+        case .idle:
+            ProgressView("Looking for plants…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .loading where viewModel.plants.isEmpty:
             ProgressView("Looking for plants…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .failed(let message) where viewModel.plants.isEmpty:
@@ -59,20 +62,53 @@ struct HomeView: View {
 
     private var list: some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.plants) { plant in
-                    NavigationLink(value: plant) {
-                        PlantCardView(plant: plant)
+            VStack(spacing: 0) {
+                if viewModel.isStale {
+                    staleBanner
+                }
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.plants) { plant in
+                        NavigationLink(value: plant) {
+                            PlantCardView(plant: plant)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, viewModel.isStale ? 8 : 12)
+                .padding(.bottom, 12)
+
+                if let lastUpdated = viewModel.lastUpdated, !viewModel.isStale {
+                    Text("Updated \(lastUpdated.formatted(.relative(presentation: .named)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 8)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
         .navigationDestination(for: Plant.self) { plant in
             PlantDetailView(plant: plant)
         }
+    }
+
+    private var staleBanner: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "wifi.slash")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No recent data")
+                    .font(.subheadline.weight(.medium))
+                if let lastUpdated = viewModel.lastUpdated {
+                    Text("Last updated \(lastUpdated.formatted(.relative(presentation: .named))) — check your connection.")
+                        .font(.caption)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(.orange)
+        .padding(12)
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
     }
 }
 

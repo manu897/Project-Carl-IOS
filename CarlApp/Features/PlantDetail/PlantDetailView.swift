@@ -240,7 +240,7 @@ struct PlantDetailView: View {
 
     private func statusTint(for summary: PlantHealth.Summary) -> Color {
         switch summary {
-        case .healthy: return .green
+        case .healthy, .online: return .green
         case .needsWater, .attention: return .orange
         case .lowBattery: return .red
         case .offline: return .gray

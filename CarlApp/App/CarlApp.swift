@@ -11,7 +11,10 @@ struct CarlApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel(repository: AppEnvironment.makeRepository(useMockHub: useMockHub)))
+            HomeView(viewModel: HomeViewModel(
+                repository: AppEnvironment.makeRepository(useMockHub: useMockHub),
+                cachingEnabled: !useMockHub
+            ))
                 // Force the view tree (and thus HomeViewModel + its repository)
                 // to recreate when the data source flips, or when signing in/out
                 // of the cloud account changes whether reads fall back to it.

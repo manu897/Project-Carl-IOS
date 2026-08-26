@@ -54,7 +54,11 @@ struct PlantCardView: View {
     private var summaryLine: some View {
         switch PlantHealth.summary(for: plant) {
         case .healthy:
-            Text(plant.isRoom ? "Monitoring room" : "Looking healthy")
+            Text("Looking healthy")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        case .online:
+            Text("Monitoring room")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         case .needsWater:
@@ -91,7 +95,7 @@ struct StatusPill: View {
 
     private var tint: Color {
         switch summary {
-        case .healthy: return .green
+        case .healthy, .online: return .green
         case .needsWater: return .orange
         case .lowBattery: return .red
         case .offline: return .gray
