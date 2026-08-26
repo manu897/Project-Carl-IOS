@@ -1,16 +1,18 @@
 # Carl Node Provisioning QR Format
 
-`carl://node?mac={MAC}&key={KEY_HEX}`
+`CARL://{MAC}/{KEY_HEX}`
 
-| Param | Format | Notes |
+| Component | Format | Notes |
 |-------|--------|-------|
-| `mac` | `AA:BB:CC:DD:EE:FF` (uppercase, colon-separated) | Sensor node BLE MAC. URL-encode the colons (`%3A`). |
-| `key` | 32-character lowercase hex | 16-byte AES-CCM-128 key generated at first boot. |
+| Host (`MAC`) | 12-character lowercase hex, no separators | Sensor node BLE MAC. |
+| Path (`KEY_HEX`) | 32-character lowercase hex | 16-byte AES-CCM-128 key generated at first boot. |
 
 Example:
 ```
-carl://node?mac=AA%3ABB%3ACC%3ADD%3AEE%3AFF&key=4b1f9c8a3e2d6f70b15c4d8a9e3f2c10
+CARL://aabbccddeeff/4b1f9c8a3e2d6f70b15c4d8a9e3f2c10
 ```
+
+Authoritative source: `Project-Carl/firmware/node-sensor/src/ui/oled.cpp` (renders the QR) and `Project-Carl/tools/provision.py` (bench provisioning). Keep this doc and `CarlNodeURL.swift`'s parser in sync with those.
 
 **Display profile:** node renders this as a QR on its OLED at first boot (and on demand from the menu). The iOS app's "Add Plant" flow scans it via AVFoundation.
 

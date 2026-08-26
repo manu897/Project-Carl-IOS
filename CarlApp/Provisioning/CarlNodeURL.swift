@@ -1,17 +1,20 @@
 import Foundation
 
 /// Parsed payload from a sensor node's first-boot QR code:
-///   `carl://node?mac=AA:BB:CC:DD:EE:FF&key=<32-hex>`
+///   `CARL://<12-hex-MAC>/<32-hex-key>`
+///
+/// e.g. `CARL://aabbccddeeff/4b1f9c8a3e2d6f70b15c4d8a9e3f2c10`
 ///
 /// MACs are matched case-insensitively; output is uppercase with colons.
-/// Keys are 16 bytes (32 lowercase hex chars).
+/// Keys are 16 bytes (32 lowercase hex chars). This mirrors what the
+/// firmware actually renders — see `Project-Carl/firmware/node-sensor/src/ui/oled.cpp`
+/// and `Project-Carl/tools/provision.py`.
 struct CarlNodeURL: Equatable, Sendable {
     let mac: String     // "AA:BB:CC:DD:EE:FF"
     let keyHex: String  // 32 lowercase hex chars
 
-    enum ParseError: LocalizedError {
+    enum ParseError: LocalizedError, Equatable {
         case wrongScheme
-        case wrongHost
         case missingMac
         case missingKey
         case badMacFormat
@@ -20,11 +23,10 @@ struct CarlNodeURL: Equatable, Sendable {
 
         var errorDescription: String? {
             switch self {
-            case .wrongScheme:   return "Not a Carl link. Expected a carl:// URL."
-            case .wrongHost:     return "Not a node QR — expected carl://node?…"
-            case .missingMac:    return "QR is missing the MAC parameter."
-            case .missingKey:    return "QR is missing the key parameter."
-            case .badMacFormat:  return "MAC address isn't in the expected AA:BB:CC:DD:EE:FF format."
+            case .wrongScheme:   return "Not a Carl link. Expected a CARL:// URL."
+            case .missingMac:    return "QR is missing the node's MAC address."
+            case .missingKey:    return "QR is missing the key."
+            case .badMacFormat:  return "MAC address isn't in the expected 12-hex-character format."
             case .badKeyLength:  return "Key must be exactly 32 hex characters (16 bytes)."
             case .badKeyHex:     return "Key contains non-hex characters."
             }
@@ -36,14 +38,13 @@ struct CarlNodeURL: Equatable, Sendable {
             throw ParseError.wrongScheme
         }
         guard url.scheme?.lowercased() == "carl" else { throw ParseError.wrongScheme }
-        guard url.host?.lowercased() == "node" else { throw ParseError.wrongHost }
+        guard let host = url.host, !host.isEmpty else { throw ParseError.missingMac }
 
-        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        guard let mac = items.first(where: { $0.name == "mac" })?.value else { throw ParseError.missingMac }
-        guard let key = items.first(where: { $0.name == "key" })?.value else { throw ParseError.missingKey }
+        let keyPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !keyPath.isEmpty else { throw ParseError.missingKey }
 
-        let normalisedMac = try normaliseMac(mac)
-        let normalisedKey = try normaliseKey(key)
+        let normalisedMac = try normaliseMac(host)
+        let normalisedKey = try normaliseKey(keyPath)
         return CarlNodeURL(mac: normalisedMac, keyHex: normalisedKey)
     }
 
