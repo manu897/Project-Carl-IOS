@@ -30,6 +30,22 @@ final class NormanClient: HubClient, @unchecked Sendable {
         return URLSession(configuration: config)
     }
 
+    /// Opts a request out of HTTP/3 (QUIC). Norman sits behind Cloudflare,
+    /// which opportunistically upgrades to QUIC-over-UDP when a client
+    /// advertises support for it — and plenty of real-world networks
+    /// (cellular, public Wi-Fi, some routers) corrupt or throttle UDP/QUIC
+    /// traffic in ways that break the handshake while plain TLS-over-TCP
+    /// works fine. Symptom seen in the wild: `quic_packet_parser_inner …
+    /// unable to parse packet` in the console, and requests that hang or
+    /// fail depending on network path. `assumesHTTP3Capable` lives on
+    /// `URLRequest`, not the session configuration, so this is applied per
+    /// request rather than once at session creation.
+    static func disablingHTTP3(_ request: URLRequest) -> URLRequest {
+        var request = request
+        request.assumesHTTP3Capable = false
+        return request
+    }
+
     func health() async throws -> HubHealth {
         throw HubError(code: "unsupported", message: "Hub status isn't available over the cloud.")
     }
@@ -77,6 +93,7 @@ final class NormanClient: HubClient, @unchecked Sendable {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request = Self.disablingHTTP3(request)
 
         let (data, response) = try await session.data(for: request)
         try check(response)

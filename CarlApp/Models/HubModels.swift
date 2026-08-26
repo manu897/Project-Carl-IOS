@@ -92,7 +92,16 @@ struct StreamFrame: Codable, Sendable {
     }
 }
 
-struct HubError: Codable, Sendable, Error {
+struct HubError: Codable, Sendable, Error, LocalizedError {
     let code: String
     let message: String
+
+    // Without this, Swift bridges HubError to NSError using its default
+    // fallback description — "The operation couldn't be completed.
+    // (CarlApp.HubError error 1.)" — which is truly meaningless: the "1" is
+    // NOT the HTTP status or anything else in `code`/`message`, just a fixed
+    // placeholder for non-LocalizedError types. Every `error.localizedDescription`
+    // call in the app (PlantDetailViewModel, HomeViewModel, AddPlantViewModel)
+    // was silently showing that useless string instead of `message`.
+    var errorDescription: String? { message }
 }

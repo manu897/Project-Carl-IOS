@@ -17,7 +17,7 @@ final class NormanAuthManager {
     private let baseURL: URL
     private let session: URLSession
 
-    init(baseURL: URL = AppEnvironment.normanBaseURL, session: URLSession = .shared) {
+    init(baseURL: URL = AppEnvironment.normanBaseURL, session: URLSession = NormanClient.defaultSession()) {
         self.baseURL = baseURL
         self.session = session
     }
@@ -66,6 +66,7 @@ final class NormanAuthManager {
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpBody = body
+        request = NormanClient.disablingHTTP3(request)
 
         do {
             let (data, response) = try await session.data(for: request)
