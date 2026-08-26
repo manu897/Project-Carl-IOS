@@ -2,12 +2,12 @@ import Foundation
 
 struct Reading: Codable, Hashable, Sendable {
     var timestamp: Date
-    var temperatureC: Double?
-    var humidityPct: Double?
-    var pressureHpa: Double?
-    var soilPct: Double?
-    var illuminanceLux: Double?
-    var batteryPct: Int?
+    var temperatureC: Double? = nil
+    var humidityPct: Double? = nil
+    var pressureHpa: Double? = nil
+    var soilPct: Double? = nil
+    var illuminanceLux: Double? = nil
+    var batteryPct: Int? = nil
 
     enum CodingKeys: String, CodingKey {
         case timestamp = "ts"

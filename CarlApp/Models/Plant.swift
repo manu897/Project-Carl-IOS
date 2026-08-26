@@ -52,10 +52,15 @@ struct Plant: Codable, Hashable, Identifiable, Sendable {
         name = try container.decode(String.self, forKey: .name)
         nodeType = try container.decodeIfPresent(NodeType.self, forKey: .nodeType) ?? .plant
         roomId = try container.decodeIfPresent(String.self, forKey: .roomId) ?? ""
-        lastSeen = try container.decode(Date.self, forKey: .lastSeen)
+        // The hub's own contract makes last_seen/latest required, but Norman's
+        // schema allows both to be null for a node that hasn't reported a
+        // reading yet — decodeIfPresent here so one quiet node doesn't fail
+        // decoding the entire list. A never-reported node reads as "offline"
+        // with no readings, which is the honest state to show.
+        lastSeen = try container.decodeIfPresent(Date.self, forKey: .lastSeen) ?? .distantPast
         online = try container.decode(Bool.self, forKey: .online)
         batteryPct = try container.decodeIfPresent(Int.self, forKey: .batteryPct)
-        latest = try container.decode(Reading.self, forKey: .latest)
+        latest = try container.decodeIfPresent(Reading.self, forKey: .latest) ?? Reading(timestamp: .distantPast)
         calibration = try container.decodeIfPresent(Calibration.self, forKey: .calibration)
         room = try container.decodeIfPresent(RoomEnv.self, forKey: .room)
     }

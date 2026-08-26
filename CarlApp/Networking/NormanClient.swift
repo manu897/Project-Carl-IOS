@@ -13,10 +13,21 @@ final class NormanClient: HubClient, @unchecked Sendable {
     private let session: URLSession
     private let decoder: JSONDecoder
 
-    init(baseURL: URL, session: URLSession = .shared) {
+    init(baseURL: URL, session: URLSession = NormanClient.defaultSession()) {
         self.baseURL = baseURL
         self.session = session
         self.decoder = .carlHub()
+    }
+
+    /// `.shared` defaults to a 60s request timeout — too long to sit on for a
+    /// cloud request. `CompositeHubClient` already races this against its own
+    /// hard deadline, but a sane session-level timeout is worth having
+    /// independently (e.g. if `NormanClient` is ever used directly).
+    static func defaultSession() -> URLSession {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 10
+        config.timeoutIntervalForResource = 15
+        return URLSession(configuration: config)
     }
 
     func health() async throws -> HubHealth {
