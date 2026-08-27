@@ -7,6 +7,19 @@ enum AppEnvironment {
     static let defaultHubURL = URL(string: "http://carl-hub.local")!
     static let normanBaseURL = URL(string: "https://norman.manideepreddy.com")!
 
+    // Shared, long-lived sessions — reused across every repository build so
+    // navigating between screens doesn't pay a fresh TLS handshake each
+    // time. `URLSession` keeps its own connection pool alive as long as the
+    // same instance is reused; the previous code called `HTTPHubClient
+    // .lanProbeSession()`/`NormanClient.defaultSession()` fresh inside
+    // `makeRepository` on every call (once per screen — Home, every
+    // PlantDetailView, background refresh), which threw the pool away and
+    // paid a new TLS handshake to Norman on every navigation. Measured
+    // impact: Norman is US-hosted (GCP us-central1), so each handshake costs
+    // real round-trip time on top of whatever the request itself needed.
+    private static let lanSession = HTTPHubClient.lanProbeSession()
+    private static let normanSession = NormanClient.defaultSession()
+
     static func makeRepository(useMockHub: Bool) -> any PlantRepository {
         if useMockHub {
             return HubRepository(client: MockHubClient())
@@ -30,8 +43,8 @@ enum AppEnvironment {
         // signed-out user still gets a fast, clear failure instead of a
         // fast success — CompositeHubClient.readWithFallback rethrows the
         // original LAN error when `cloud` is nil.
-        let lan = HTTPHubClient(baseURL: defaultHubURL, session: HTTPHubClient.lanProbeSession())
-        let cloud = NormanSession.isSignedIn ? NormanClient(baseURL: normanBaseURL) : nil
+        let lan = HTTPHubClient(baseURL: defaultHubURL, session: lanSession)
+        let cloud = NormanSession.isSignedIn ? NormanClient(baseURL: normanBaseURL, session: normanSession) : nil
         return HubRepository(client: CompositeHubClient(lan: lan, cloud: cloud))
     }
 }

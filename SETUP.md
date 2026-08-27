@@ -32,7 +32,7 @@ Open `CarlApp.xcodeproj` → select the `CarlApp` target → **Signing & Capabil
 - The first time, you'll need to **trust** the developer certificate on the phone: Settings → General → VPN & Device Management → tap your account → Trust.
 - Pick the device in the destination dropdown and hit ⌘R.
 
-### 3. Point the app at your hub
+### 3. Point the app at your hub — and optionally the cloud
 
 Once the app is running on the phone:
 1. Tap the **gear** icon (top-left of My Plants).
@@ -43,16 +43,18 @@ Requirements for the phone:
 - On the **same Wi-Fi network** as the Carl hub.
 - Local Network permission granted (iOS prompts the first time the app tries to discover `_carl-hub._tcp`).
 
+**Away from home?** Sign in under **Settings → Away from home → Cloud account** (creates/uses a Norman account). Once signed in, reads fall back to Norman's cloud API whenever the hub isn't reachable — no further app setup needed. This only works if your hub has already been *claimed* under that Norman account; that's currently a manual step, not an in-app one — see `Project-Carl`'s README, "Connecting a hub to Project-Norman."
+
 ### 4. What you'll see
 
-| Hub firmware phase | App behavior |
-|---|---|
-| **3a** (HTTP server only, empty `/api/nodes`) | "My Plants" loads with an empty list — confirms LAN connectivity. |
-| **3b+** (BLE scanner + registry populated) | Real plant cards appear. The hub currently emits `last_seen` / `ts` as relative seconds-ago strings; the iOS decoder handles that until Phase 3d's SNTP adds ISO 8601 timestamps. |
-| **3d+** (SNTP) | iOS automatically switches to ISO 8601 parsing — no app change needed. |
-| **future** (`/api/stream` WebSocket) | Live updates without pull-to-refresh. The app silently falls back to pull-to-refresh when this endpoint isn't there. |
+The hub API is at **v0.3.0** ([`api/openapi.yaml`](api/openapi.yaml)) — `/api/health`, `/api/nodes` (list/create/update/delete), `/api/nodes/{id}/history`, `/api/setup/wifi` are all implemented, including `node_type` (plant/room) and `room_id`. `/api/stream` (WebSocket live updates) is specced but not implemented on the hub yet — the app always falls back to pull-to-refresh for that, no error shown.
+
+Plant sensor nodes render as plant cards; room/ambient nodes (Thingy:53) render distinctly — a "Room" badge, no soil/watering rows, their own environment card. On first launch with no cached data you'll see a brief "Looking for plants…" spinner; after that, the app shows last-known data instantly and refreshes live in the background (see the offline-cache note in [docs/design.md](docs/design.md#21-home--my-plants)).
+
+Provisioning a new sensor node: scan its QR code (format `CARL://<12-hex-MAC>/<32-hex-key>`, see [docs/qr-format.md](docs/qr-format.md)) or enter the MAC/key manually.
 
 ## Cross-repo coordination
-- `api/openapi.yaml` in this repo is the **iOS-side mirror** of the Carl hub HTTP contract; authoritative copy lives in `Project-Carl/documents/api/openapi.yaml`.
-- `docs/qr-format.md` is the same: mirror of the Carl-side spec.
-- Plant profile picture upload (`PUT /v1/plants/{id}/profile-photo`) — Norman-side endpoint coordination.
+- `api/openapi.yaml` in this repo is the **iOS-side mirror** of the Carl hub HTTP contract; authoritative copy lives in `Project-Carl/documents/api/openapi.yaml` — currently v0.3.0 on both sides.
+- `docs/qr-format.md` is the same: mirror of the Carl-side spec (`CARL://<12-hex-MAC>/<32-hex-key>`, matching `Project-Carl/firmware/node-sensor/src/ui/oled.cpp`).
+- Plant profile photos are stored **locally on-device only** (`PhotoStore`) — there's no Norman upload endpoint for them today, and per an earlier product decision camera-node imagery generally stays on the hub, not Norman. Revisit this line if that changes.
+- Hub → Norman data flow is MQTT-only right now (Carl's `norman_uplink.c`); the HTTPS batch alternative (`POST /v1/hubs/{id}/batch`) exists on Norman's side but nothing currently uses it.

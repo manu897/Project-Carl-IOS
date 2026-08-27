@@ -45,9 +45,11 @@ The first thing the user sees. A scrollable list of plant cards. Each card is a 
 - Right-aligned **status pill** mirroring the subtitle's intent (Healthy / Needs water / Battery low / Offline).
 
 **Interactions:**
-- Pull-to-refresh.
+- Pull-to-refresh — also forces a live fetch that bypasses the offline cache below.
 - Tap card → Plant detail.
-- `+` button (top-right): Add Plant — wired but disabled in this scaffold; lands in a follow-up commit.
+- `+` button (top-right): opens Add Plant (§2.4's IA tree has the full flow).
+
+**Offline cache & freshness.** The list shows the last-known data instantly on launch instead of a blank spinner (`PlantCacheStore`), then a live fetch replaces it. A quiet caption under the list reads "Updated Xh ago"; past 24h with no successful refresh that becomes an explicit orange "No recent data — check your connection" banner above the cards, rather than silently showing arbitrarily old numbers. Not shown in the screenshots below (captured pre-cache) — see [HomeViewModel.swift](../CarlApp/Features/Home/HomeViewModel.swift).
 
 **Empty/loading/error states** are handled by `ContentUnavailableView` and `ProgressView` (not shown in screenshots; covered in code at [HomeView.swift](../CarlApp/Features/Home/HomeView.swift)).
 
@@ -65,7 +67,7 @@ Tapping a card opens this. Photo header, then a single tidy table of plain-langu
 
 | Row | Possible values | Notes |
 |---|---|---|
-| **Status** | Healthy / Needs water / Battery low / Offline | Mirrors the home pill. |
+| **Status** | Healthy / Online (room nodes) / Needs water / Battery low / Offline | Mirrors the home pill. A room node has no plant to be "healthy" — it reads "Online" instead, same green tint. |
 | **Last watered** | "Today" / "Yesterday" / "*N* days ago" / "Not detected" | Detected as a soil-moisture rising edge (≥ +10 percentage points within ~1h). Falls back to "Not detected" when no event found in window — better honest than wrong. |
 | **Water again** | "Now" / "Tomorrow" / "In *N* days" / "—" | Linear extrapolation from the last 12h drying rate to the dry threshold. "—" when soil isn't dropping. |
 | **Light** | Good / Low / High / — | vs. generic indoor range 200–2000 lx. Will be per-species when catalogue lands. |
@@ -97,7 +99,7 @@ The grid + charts cover the same ground the original "tech" view did, just one t
 
 ### 2.4 Settings, Hub Wi-Fi setup, and Alerts
 
-The gear icon (top-left of My Plants) opens a sheet with four sections: **Data source** (Mock / Real toggle), **Hub** (Set up hub Wi-Fi), **Notifications** (Alerts → detail screen), and **About** (version, build, GitHub link).
+The gear icon (top-left of My Plants) opens a sheet with five sections: **Data source** (Mock / Real toggle), **Hub** (Set up hub Wi-Fi), **Away from home** (Cloud account — sign in/create account/sign out, enables the Norman fallback), **Notifications** (Alerts → detail screen), and **About** (version, build, GitHub link).
 
 | Settings (light) | Hub Wi-Fi setup | Alerts |
 |---|---|---|
@@ -188,7 +190,7 @@ Built today:
 - **Norman cloud fallback** — sign in once, and reads (plant list, detail, history) fall back to the cloud when the hub isn't reachable on LAN. Writes always stay hub-only.
 
 Planned (not built):
-- **Hub-claiming flow** — `POST /v1/hubs` isn't wired into the app yet, so a signed-in account has no hub associated with it and Norman has nothing to serve. This is the next priority — see the root [README](../README.md#future-plans).
+- **In-app hub-claiming flow** — `POST /v1/hubs` works today but only via a manual `curl` step (see `Project-Carl`'s README); no in-app UI yet to do this or hand the resulting token to the hub. This is the next priority — see the root [README](../README.md#future-plans).
 - **Widgets** — home/lock-screen widget showing the worst-status plant.
 - **Custom-trained species model** — today's classifier is Vision's built-in (coarse) classifier; a Create ML model trained on common houseplants is a drop-in upgrade to `PlantClassifier`.
 
@@ -214,6 +216,7 @@ Resolved since first written: the **plant catalogue** question is answered by th
 
 - All screenshots in [screenshots/](screenshots/) are PNGs from the iPhone 17 Pro simulator (1206 × 2622 logical pixels).
 - Regenerate via `xcrun simctl launch <device> com.projectcarl.CarlApp -screenshotEntry=<home|detail|detailAdvanced>` after wiring the screenshot shim back in (see commit history) and toggling appearance with `xcrun simctl ui <device> appearance light|dark`.
+- ⚠️ **Stale as of this pass:** the screenshots predate room nodes, the cloud account section, and the offline-cache staleness UI (§2.1, §2.4). Content is accurate; the images aren't — worth a re-capture pass before using this doc for external UI/UX collaboration.
 
 ---
 

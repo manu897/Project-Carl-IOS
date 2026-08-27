@@ -69,7 +69,7 @@ Everything below is built and running end-to-end (mock fixtures + real hub), wit
 
 **Core app**
 - Home list, plant detail (health card + advanced Swift Charts, 24h/7d/30d), Settings — all in dark mode too.
-- **Room nodes** (Carl API v0.3.0): plant vs. room node types render differently — room nodes skip soil/watering rows and show their own "Room environment" card; plants sharing a `room_id` display that room's ambient readings automatically (`Plant.room`, grafted server-side).
+- **Room nodes** (Carl API v0.3.0): plant vs. room node types render differently — room nodes skip soil/watering rows, show their own "Room environment" card, and read "Online" rather than "Healthy" (a room sensor has no plant to be healthy); plants sharing a `room_id` display that room's ambient readings automatically (`Plant.room`, grafted server-side).
 
 **Onboarding (Add Plant)**
 - QR scan or manual MAC/key entry, photo capture, hub provisioning.
@@ -82,20 +82,26 @@ Everything below is built and running end-to-end (mock fixtures + real hub), wit
 
 **Cloud account / off-LAN fallback**
 - Sign in or create a Norman account from Settings → *Away from home* ([`NormanAccountView`](CarlApp/Features/Account/NormanAccountView.swift)). JWT stored in Keychain.
-- [`CompositeHubClient`](CarlApp/Networking/CompositeHubClient.swift): reads try the hub first (short-timeout LAN probe), fall back to Norman's `/v1/…` API when off-network. Writes always stay hub-only.
-- ⚠️ **Known gap:** signing in wires up the fallback plumbing, but there's no in-app flow yet to *claim* your hub under your Norman account (`POST /v1/hubs`) or hand that token to the hub firmware — so Norman won't actually have your plant data to serve until that's built. See Future plans.
+- [`CompositeHubClient`](CarlApp/Networking/CompositeHubClient.swift): reads try the hub first (short-timeout LAN probe), fall back to Norman's `/v1/…` API when off-network. Writes always stay hub-only. Both legs race a hard wall-clock deadline independent of `URLSessionConfiguration` timeouts (mDNS resolution for `carl-hub.local` doesn't reliably honor those) — worst case ~17s before either data or a real error, never an indefinite spinner.
+- One shared `URLSession` per client (LAN and Norman), reused across every screen — avoids paying a fresh TLS handshake to Norman on every navigation. Matters more than it sounds: Norman is US-hosted (GCP `us-central1`), so each handshake is real round-trip time.
+- ⚠️ **Known gap:** claiming a hub under your Norman account (`POST /v1/hubs`) has no in-app flow — it's a one-time manual `curl` step today (see `Project-Carl`'s README, "Connecting a hub to Project-Norman"). Works once done; just not self-service yet. See Future plans.
+- **Offline cache**: the plant list shows the last-known data instantly on launch ([`PlantCacheStore`](CarlApp/Persistence/PlantCacheStore.swift)), then replaces it with a live fetch. A quiet "Updated Xh ago" caption tracks freshness; past 24h with no successful refresh, an explicit "No recent data" banner replaces the quiet caption so stale numbers are never shown silently. Never reads/writes mock fixtures.
+
+**Reliability fixes from real-device testing**
+- `Plant` decoding tolerates Norman's nullable `last_seen`/`latest` (a node that's never reported) — previously one bad node failed the whole list.
+- Norman requests opt out of HTTP/3/QUIC (`assumesHTTP3Capable = false`) — some networks corrupt QUIC handshakes in ways that hang or fail a request while plain TLS-over-TCP works fine.
+- `HubError` conforms to `LocalizedError` — errors used to surface as Swift's generic fallback text; now the real message shows.
 
 ## Future plans
 
 Roughly in priority order:
 
-1. **Hub-claiming flow** — the missing link for cloud fallback to show real data. A setup screen (likely folded into Hub Wi-Fi setup) that calls `POST /v1/hubs`, surfaces the one-time hub API token, and gets it onto the hub itself.
+1. **Hub-claiming flow** — replace the manual `curl POST /v1/hubs` step with an in-app setup screen (likely folded into Hub Wi-Fi setup) that surfaces the one-time hub API token and gets it onto the hub itself.
 2. **Widgets** — home/lock-screen widget showing the worst-status plant (separate WidgetKit target sharing the existing models).
 3. **Custom Core ML species model** — train on ~30–50 common houseplants in Create ML for real species accuracy, replacing/augmenting the built-in Vision classifier.
 4. **Multi-hub support** — `HubDiscovery` currently resolves a single `carl-hub.local`; extend to NWBrowser-based discovery for multiple hubs (relevant once Norman's per-user multi-hub model is exercised from the app).
 5. **Manual "I just watered" logging** — user-triggered watering events to complement/correct the soil-moisture-rising-edge detection.
-6. **SwiftData persistence** — local caching layer for offline-first reads and history, instead of re-fetching on every launch.
-7. **Apple Home hand-off** — once the hub firmware exposes Matter (no work started there yet), add an "Add to Apple Home" affordance.
+6. **Apple Home hand-off** — once the hub firmware exposes Matter (no work started there yet), add an "Add to Apple Home" affordance.
 
 Open UX questions (plant catalogue depth, room-vs-plant list presentation, notification defaults, etc.) are tracked in [`docs/design.md`](docs/design.md#5-open-questions-for-design-collaboration).
 
